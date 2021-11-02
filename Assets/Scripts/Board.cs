@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using UnityEngine;
 
 public class Board {
     
@@ -115,6 +117,9 @@ public class Board {
         // 石数を取得
         blackScore = BitCount(PlayerBoard);
         whiteScore = BitCount(OpponentBoard);
+
+
+
         if (NowTurn == WhiteTurn) {
             int tmp = blackScore;
             blackScore = whiteScore;
@@ -328,6 +333,8 @@ public class Board {
     /// </summary>
     /// <returns>手番側の確定石数</returns>
     private int CalcPlayerSettledStone() {
+        //Debug.Log("black "+BitCount(PlayerBoard));
+        //Debug.Log("white "+whiteScore);   
         ulong playerSettledStoneBoard = 0;
         while(true) {
             int cntNewSettledStone = 0;

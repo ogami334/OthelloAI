@@ -15,12 +15,12 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
     // GamesLog gamesLog;
 
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 10000000;
+    const int       MaxNodes1                       = 1000;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
     const bool      isHuman2                        = true;
-    const int       MaxNodes2                       = 10000000;
+    const int       MaxNodes2                       = 1000;
     const double    WeightNumberOfHands2            = 0.3;
     const double    WeightNumberOfSettledStones2    = 1;
     const double    WeightDangerousHands2           = 2;
