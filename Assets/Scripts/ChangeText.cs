@@ -12,14 +12,19 @@ public class ChangeText : MonoBehaviour
     public GameObject othello;
     public OthelloAIForAIvsHuman2 script;
     [SerializeField] private Board board;
-    [SerializeField]private Text score_text;
-    
+    [SerializeField] private double best_evaluation_value;    
+    [SerializeField]private Text num_of_stones;
+    //[SerializeField]private Text stone_num;   
     void Start(){
         
-        script=othello.GetComponent<OthelloAIForAIvsHuman2>();
+        script = othello.GetComponent<OthelloAIForAIvsHuman2>();
         board =script.board;
+        //best_evaluation_value = script.bestEval;
+        //int expressed_ev = System.Math.Round(best_evaluation_value*10);
         //Debug.Log("board "+board);
-        score_text= this.GetComponent<Text> ();
+        //white_text = this.GetComponent<Text> ();
+        num_of_stones = this.GetComponent<Text> ();
+        //stone_num = this.GetComponent<Text>();
     }
 
     // Update is called once per frame
@@ -28,10 +33,18 @@ public class ChangeText : MonoBehaviour
         
         //gameObject.GetComponent<Text>().text = string.Format("White Stone {0}",BitCount(Board.PlayerBoard));
         
-       
-        int num = board.BitCount(board.PlayerBoard);
+        best_evaluation_value = script.bestEval;
+        int white_num = board.BitCount(board.PlayerBoard);
+        int black_num = board.BitCount(board.OpponentBoard);
+        int expressed_ev = (int)System.Math.Round(best_evaluation_value*1000);
+        //Debug.Log("best_ev"+best_evaluation_value);
+        //Debug.Log("ev"+ expressed_ev);
         //int num = Board.BitCount(0x8000000000000000);
-        score_text.text = num.ToString();
+        //stone_num.text = "White Stone: " + white_num.ToString() + "\n" + "Black Stone" + black_num.ToString();
+        num_of_stones.text = "Black Stone: " + black_num.ToString() + "\nWhite Stone: " + white_num.ToString() + "\nEval_value: " + expressed_ev.ToString();
+
+
+        
         //Debug.Log("score "+num);
         //Debug.Log("text "+score_text.text);
     }

@@ -17,18 +17,20 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     // GamesLog gamesLog;
 
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 1000;
+    const int       MaxNodes1                       = 10;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
     const bool      isHuman2                        = true;
-    const int       MaxNodes2                       = 1000;
+    const int       MaxNodes2                       = 10;
     const double    WeightNumberOfHands2            = 0.3;
     const double    WeightNumberOfSettledStones2    = 1;
     const double    WeightDangerousHands2           = 2;
     
     const int maxGames = 1;
     public int CntGames{ get; set; } 
+    
+    public double bestEval;
 
     void Start() {
         Random.InitState(System.DateTime.Now.Millisecond);
@@ -265,7 +267,8 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         AIInformation.LastNumberOfHands.Add(puts.Count);
 
         double[] evals = new double[puts.Count];
-        double bestEval = -INF;
+        //double bestEval = -INF;
+        bestEval = -INF;
         for (int i = 0; i < puts.Count; ++i) {
             Board newBoard = new Board(board);
             newBoard.UpdateBoard(puts[i]);
@@ -278,6 +281,7 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
             if (evals[i] == bestEval) bestPuts.Add(puts[i]);
         }
         int bi = Random.Range(0, bestPuts.Count);
+        //System.Console.WriteLine(bestEval);
         return bestPuts[bi];
     }
 
