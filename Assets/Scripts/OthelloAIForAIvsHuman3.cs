@@ -20,12 +20,12 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     // GamesLog gamesLog;
 
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 10;
+    const int       MaxNodes1                       = 1000000;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
     const bool      isHuman2                        = true;
-    const int       MaxNodes2                       = 10;
+    const int       MaxNodes2                       = 100;
     const double    WeightNumberOfHands2            = 0.3;
     const double    WeightNumberOfSettledStones2    = 1;
     const double    WeightDangerousHands2           = 2;
@@ -59,6 +59,8 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         } else {
             AIPlay();
             UpdateBoardDisplay();
+            DestroyAllRegalPut();
+            AddAllRegalPut();
         }
     }
 
@@ -104,6 +106,18 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         }
     }
 
+    ///<summary>
+    ///候補手を全てDestroy
+    ///</summary>
+    void DestroyAllRegalPut() {
+        GameObject[] regals = GameObject.FindGameObjectsWithTag("Regal");
+        foreach (GameObject regal in regals) {
+            //Debug.Log("regal");
+            Destroy(regal);
+        }
+    }
+
+
     /// <summary>
     /// 盤上の石を全て追加
     ///</summary>
@@ -142,13 +156,6 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         ulong mask = 0x8000000000000000;
         for (float y = 1.75f; y >= -1.75f; y -= 0.5f) {
             for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
-                /*if ((mask & blackBoard) > 0) {
-                    GameObject stone = Instantiate(blackStone) as GameObject;
-                    stone.transform.position = new Vector3(x, y, 0);
-                } else if ((mask & whiteBoard) > 0) {
-                    GameObject stone = Instantiate(whiteStone) as GameObject;
-                    stone.transform.position = new Vector3(x, y, 0);
-                }*/
                 if ((mask & regalputBoard) >0) {
                     GameObject stone = Instantiate(batu) as GameObject;
                     stone.transform.position = new Vector3(x, y, 0);
@@ -205,7 +212,11 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     void AIPlay() {
         PlayerInformation AIInformation = blackInformation;
         if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
-        ulong put = GetAIPutFromBoard_updated(board, AIInformation);
+        var sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        ulong put = GetAIPutFromBoard(board, AIInformation);
+        sw.Stop();
+        Debug.Log("elapsed "+sw.ElapsedMilliseconds);
         board.UpdateBoard(put);
     }
 
@@ -373,7 +384,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         int num_of_stones = board.BitCount(board.PlayerBoard) + board.BitCount(board.OpponentBoard);
         //Board nowBoard = new Board(board);
         int rest_depth = 64 - num_of_stones;
-        if (rest_depth <= 5) {
+        if (rest_depth <= 12) {
             const double INF = 1e9;
             List<ulong> puts = board.MakePlayerLegalPutList();
             //AIInformation.LastNumberOfHands.Add(puts.Count);

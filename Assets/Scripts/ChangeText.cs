@@ -10,14 +10,14 @@ public class ChangeText : MonoBehaviour
     // Start is called before the first frame update
     public GameObject score_object = null;
     public GameObject othello;
-    public OthelloAIForAIvsHuman2 script;
+    public OthelloAIForAIvsHuman3 script;
     [SerializeField] private Board board;
     [SerializeField] private double best_evaluation_value;    
     [SerializeField]private Text num_of_stones;
     //[SerializeField]private Text stone_num;   
     void Start(){
         
-        script = othello.GetComponent<OthelloAIForAIvsHuman2>();
+        script = othello.GetComponent<OthelloAIForAIvsHuman3>();
         board =script.board;
         //best_evaluation_value = script.bestEval;
         //int expressed_ev = System.Math.Round(best_evaluation_value*10);

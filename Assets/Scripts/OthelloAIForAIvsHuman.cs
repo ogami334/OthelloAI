@@ -6,8 +6,8 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
 {
     [SerializeField]private GameObject blackStone;
     [SerializeField]private GameObject whiteStone;
-
-    Board board;
+    [SerializeField]private GameObject batu;
+    public Board board;
     PlayerInformation blackInformation;
     PlayerInformation whiteInformation;
     PlayerInformation player1Information;
@@ -15,7 +15,7 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
     // GamesLog gamesLog;
 
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 1000;
+    const int       MaxNodes1                       = 1000000;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
@@ -27,6 +27,8 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
     
     const int maxGames = 1;
     public int CntGames{ get; set; } 
+
+    public double bestEval;
 
     void Start() {
         Random.InitState(System.DateTime.Now.Millisecond);
@@ -52,6 +54,8 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
         } else {
             AIPlay();
             UpdateBoardDisplay();
+            DestroyAllRegalPut();
+            AddAllRegalPut();
         }
     }
 
@@ -96,6 +100,13 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
             Destroy(stone);
         }
     }
+    void DestroyAllRegalPut() {
+        GameObject[] regals = GameObject.FindGameObjectsWithTag("Regal");
+        foreach (GameObject regal in regals) {
+            //Debug.Log("regal");
+            Destroy(regal);
+        }
+    }
 
     /// <summary>
     /// 盤上の石を全て追加
@@ -122,6 +133,28 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
             }
         }
     }
+
+    //add original function;
+    void AddAllRegalPut() {
+        ulong blackBoard = board.PlayerBoard;
+        ulong whiteBoard = board.OpponentBoard;
+        if (board.NowTurn == Board.WhiteTurn) {
+            blackBoard = board.OpponentBoard;
+            whiteBoard = board.PlayerBoard;
+        }
+        ulong regalputBoard = board.MakePlayerLegalBoard();
+        ulong mask = 0x8000000000000000;
+        for (float y = 1.75f; y >= -1.75f; y -= 0.5f) {
+            for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
+                if ((mask & regalputBoard) >0) {
+                    GameObject stone = Instantiate(batu) as GameObject;
+                    stone.transform.position = new Vector3(x, y, 0);
+                }
+                mask >>= 1;
+            }
+        }
+    }
+
 
     /// <summary>
     /// 人間のターンであるか判定
@@ -167,10 +200,20 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
     /// <summary>
     /// AIの着手を行なう
     /// <summary>
-    void AIPlay() {
+    /*void AIPlay() {
         PlayerInformation AIInformation = blackInformation;
         if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
         ulong put = GetAIPutFromBoard(board, AIInformation);
+        board.UpdateBoard(put);
+    }*/
+    void AIPlay() {
+        PlayerInformation AIInformation = blackInformation;
+        if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
+        var sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        ulong put = GetAIPutFromBoard(board, AIInformation);
+        sw.Stop();
+        Debug.Log("elapsed "+sw.ElapsedMilliseconds);
         board.UpdateBoard(put);
     }
 
@@ -245,7 +288,8 @@ public class OthelloAIForAIvsHuman : MonoBehaviour
         AIInformation.LastNumberOfHands.Add(puts.Count);
 
         double[] evals = new double[puts.Count];
-        double bestEval = -INF;
+        //double bestEval = -INF;
+        bestEval = -INF;
         for (int i = 0; i < puts.Count; ++i) {
             Board newBoard = new Board(board);
             newBoard.UpdateBoard(puts[i]);

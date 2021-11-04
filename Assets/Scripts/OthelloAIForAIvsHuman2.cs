@@ -7,7 +7,6 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
 {
     [SerializeField]private GameObject blackStone;
     [SerializeField]private GameObject whiteStone;
-
     [SerializeField]private GameObject batu;
 
     public Board board;
@@ -19,12 +18,12 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     // GamesLog gamesLog;
 
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 10;
+    const int       MaxNodes1                       = 1000000;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
     const bool      isHuman2                        = true;
-    const int       MaxNodes2                       = 10;
+    const int       MaxNodes2                       = 100;
     const double    WeightNumberOfHands2            = 0.3;
     const double    WeightNumberOfSettledStones2    = 1;
     const double    WeightDangerousHands2           = 2;
@@ -111,7 +110,7 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     void DestroyAllRegalPut() {
         GameObject[] regals = GameObject.FindGameObjectsWithTag("Regal");
         foreach (GameObject regal in regals) {
-            Debug.Log("regal");
+            //Debug.Log("regal");
             Destroy(regal);
         }
     }
@@ -210,7 +209,11 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     void AIPlay() {
         PlayerInformation AIInformation = blackInformation;
         if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
+        var sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
         ulong put = GetAIPutFromBoard(board, AIInformation);
+        sw.Stop();
+        Debug.Log("elapsed "+sw.ElapsedMilliseconds);
         board.UpdateBoard(put);
     }
 
@@ -342,11 +345,7 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     /// <returns>AIの着手を座標として出力 (例: F5)</returns>
     string GetAIPutAsCoordinateFromStrBoard(string strBoard, bool AIIsBlack, PlayerInformation AIInformation) {
         Board board = StrBoardToBoard(strBoard, AIIsBlack);
-        var sw = new System.Diagnostics.Stopwatch();
-        sw.Start();
         ulong put = GetAIPutFromBoard(board, AIInformation);
-        sw.Stop();
-        Debug.Log("elapsed "+sw.ElapsedMilliseconds);
         string coordinate = BitToCoordinate(put);
         return coordinate;
     }//changed
