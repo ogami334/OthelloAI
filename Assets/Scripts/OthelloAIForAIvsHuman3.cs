@@ -1,9 +1,10 @@
 //add alpha-beta search
+//add full search at Late stage
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class OthelloAIForAIvsHuman2 : MonoBehaviour
+public class OthelloAIForAIvsHuman3 : MonoBehaviour
 {
     [SerializeField]private GameObject blackStone;
     [SerializeField]private GameObject whiteStone;
@@ -58,8 +59,6 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         } else {
             AIPlay();
             UpdateBoardDisplay();
-            DestroyAllRegalPut();
-            AddAllRegalPut();
         }
     }
 
@@ -93,7 +92,6 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     void UpdateBoardDisplay() {
         DestroyAllStone();
         AddAllStoneOnBoard();
-        //AddAllRegalPut();
     }
 
     /// <summary>
@@ -103,16 +101,6 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         GameObject[] stones = GameObject.FindGameObjectsWithTag("Stone");
         foreach (GameObject stone in stones) {
             Destroy(stone);
-        }
-    }
-    ///<summary>
-    ///候補手を全てDestroy
-    ///</summary>
-    void DestroyAllRegalPut() {
-        GameObject[] regals = GameObject.FindGameObjectsWithTag("Regal");
-        foreach (GameObject regal in regals) {
-            Debug.Log("regal");
-            Destroy(regal);
         }
     }
 
@@ -154,6 +142,13 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         ulong mask = 0x8000000000000000;
         for (float y = 1.75f; y >= -1.75f; y -= 0.5f) {
             for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
+                /*if ((mask & blackBoard) > 0) {
+                    GameObject stone = Instantiate(blackStone) as GameObject;
+                    stone.transform.position = new Vector3(x, y, 0);
+                } else if ((mask & whiteBoard) > 0) {
+                    GameObject stone = Instantiate(whiteStone) as GameObject;
+                    stone.transform.position = new Vector3(x, y, 0);
+                }*/
                 if ((mask & regalputBoard) >0) {
                     GameObject stone = Instantiate(batu) as GameObject;
                     stone.transform.position = new Vector3(x, y, 0);
@@ -210,8 +205,55 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     void AIPlay() {
         PlayerInformation AIInformation = blackInformation;
         if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
-        ulong put = GetAIPutFromBoard(board, AIInformation);
+        ulong put = GetAIPutFromBoard_updated(board, AIInformation);
         board.UpdateBoard(put);
+    }
+
+
+    double EvaluationValue_fullsearch(Board boardToEvaluate, int nowDepth,int maxDepth) {
+        double res;
+        const double INF = 1e9;
+        Board newBoard;
+
+        PlayerInformation playerInformation = blackInformation;
+        if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
+        //int maxDepth = CalcMaxDepthFromPlayerInformation(playerInformation);
+
+
+        // 再帰の終了条件: 読みの深さが上限に達した場合
+        if(nowDepth == maxDepth) {
+            res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * playerInformation.WeightNumberOfHands
+                 + boardToEvaluate.CalcDifferenceSettledStone()     * playerInformation.WeightNumberOfSettledStones
+                 - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands;
+            res = board.BitCount(boardToEvaluate.PlayerBoard);//added
+            if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
+            return res;
+        }
+        
+        List<ulong> puts = boardToEvaluate.MakePlayerLegalPutList();
+        //playerInformation.LastNumberOfHands.Add(puts.Count);
+
+        // 現在のノードが手番側の場合
+        if(boardToEvaluate.NowTurn == board.NowTurn) {
+            res = -INF;
+            foreach(ulong put in puts) {
+                newBoard = new Board(boardToEvaluate);
+                newBoard.UpdateBoard(put);
+                res = System.Math.Max(res, EvaluationValue_fullsearch(newBoard, nowDepth + 1,maxDepth));
+            }
+        }
+
+        // 現在のノードが相手側の場合
+        else {
+            res = INF;
+            foreach(ulong put in puts) {
+                newBoard = new Board(boardToEvaluate);
+                newBoard.UpdateBoard(put);
+                res = System.Math.Min(res, EvaluationValue_fullsearch(newBoard, nowDepth + 1,maxDepth));
+            }
+        }
+
+        return res;
     }
 
     /// <summary>
@@ -321,6 +363,64 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         return bestPuts[bi];
     }
 
+    ulong GetAIPutFromBoard_updated(Board board, PlayerInformation AIInformation) {
+        ulong blackBoard = board.PlayerBoard;
+        ulong whiteBoard = board.OpponentBoard;
+        if (board.NowTurn == Board.WhiteTurn) {
+            blackBoard = board.OpponentBoard;
+            whiteBoard = board.PlayerBoard;
+        }
+        int num_of_stones = board.BitCount(board.PlayerBoard) + board.BitCount(board.OpponentBoard);
+        //Board nowBoard = new Board(board);
+        int rest_depth = 64 - num_of_stones;
+        if (rest_depth <= 5) {
+            const double INF = 1e9;
+            List<ulong> puts = board.MakePlayerLegalPutList();
+            //AIInformation.LastNumberOfHands.Add(puts.Count);
+
+            double[] evals = new double[puts.Count];
+            //double bestEval = -INF;
+            bestEval = -INF;
+            for (int i = 0; i < puts.Count; ++i) {
+                Board newBoard = new Board(board);
+                newBoard.UpdateBoard(puts[i]);
+                evals[i] = EvaluationValue_fullsearch(newBoard, 1 ,rest_depth);
+                if (evals[i] > bestEval) bestEval = evals[i]; 
+            }
+            //AIInformation.UpdateLastAvgNumberOfHands();
+            List<ulong> bestPuts = new List<ulong>();
+            for (int i = 0; i < puts.Count; ++i) {
+                if (evals[i] == bestEval) bestPuts.Add(puts[i]);
+            }
+            int bi = Random.Range(0, bestPuts.Count);
+            //System.Console.WriteLine(bestEval);
+            return bestPuts[bi];            
+        }
+        else {
+        const double INF = 1e9;
+        List<ulong> puts = board.MakePlayerLegalPutList();
+        AIInformation.LastNumberOfHands.Add(puts.Count);
+
+        double[] evals = new double[puts.Count];
+        //double bestEval = -INF;
+        bestEval = -INF;
+        for (int i = 0; i < puts.Count; ++i) {
+            Board newBoard = new Board(board);
+            newBoard.UpdateBoard(puts[i]);
+            evals[i] = EvaluationValue(newBoard, 1, -INF, INF);
+            if (evals[i] > bestEval) bestEval = evals[i]; 
+        }
+        AIInformation.UpdateLastAvgNumberOfHands();
+        List<ulong> bestPuts = new List<ulong>();
+        for (int i = 0; i < puts.Count; ++i) {
+            if (evals[i] == bestEval) bestPuts.Add(puts[i]);
+        }
+        int bi = Random.Range(0, bestPuts.Count);
+        //System.Console.WriteLine(bestEval);
+        return bestPuts[bi];
+        }
+    }//add full-search option
+
     /// <summary>
     /// 盤面を表す文字列からAIの着手を座標として求める
     /// </summary>
@@ -344,7 +444,7 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         Board board = StrBoardToBoard(strBoard, AIIsBlack);
         var sw = new System.Diagnostics.Stopwatch();
         sw.Start();
-        ulong put = GetAIPutFromBoard(board, AIInformation);
+        ulong put = GetAIPutFromBoard_updated(board, AIInformation);
         sw.Stop();
         Debug.Log("elapsed "+sw.ElapsedMilliseconds);
         string coordinate = BitToCoordinate(put);

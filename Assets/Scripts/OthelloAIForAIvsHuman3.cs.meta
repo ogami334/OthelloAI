@@ -1,12 +1,9 @@
 fileFormatVersion: 2
-guid: 8b4552689bba315448dc49f2c063dda0
+guid: a4edd0a9e0c470242a6a6ae4409ef5cd
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - blackStone: {instanceID: 0}
-  - whiteStone: {instanceID: 0}
-  - batu: {instanceID: 0}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

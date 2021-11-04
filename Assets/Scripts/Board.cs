@@ -169,7 +169,7 @@ public class Board {
     /// 手番側の合法手ボードを生成
     /// </summary>
     /// <returns>playerから見て, 置ける位置にのみフラグが立っている64ビット</returns>
-    private ulong MakePlayerLegalBoard() {
+    public ulong MakePlayerLegalBoard() {
         // 左右端の番人
         ulong horizontalWatchBoard = OpponentBoard & 0x7e7e7e7e7e7e7e7e;
         // 上下端の番人
