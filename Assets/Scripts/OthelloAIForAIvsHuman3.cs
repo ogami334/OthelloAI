@@ -3,6 +3,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
 
 public class OthelloAIForAIvsHuman3 : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     [SerializeField]private GameObject whiteStone;
 
     [SerializeField]private GameObject batu;
+
+    [SerializeField]private GameObject star;
 
     public Board board;
     //変更
@@ -86,6 +89,20 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     public void RestartButtonCilcked() {
         // gamesLog = new GamesLog();
         RestartGame();
+    }
+    
+
+    void stardisplay(ulong put) {
+        ulong mask = 0x8000000000000000;
+        for (float y = 1.75f; y >= -1.75f; y -= 0.5f) {
+            for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
+                if ((mask & put) > 0) {
+                    GameObject stone = Instantiate(star) as GameObject;
+                    stone.transform.position = new Vector3(x, y, 0);
+                }
+                mask >>= 1;
+            }
+        }
     }
 
     /// <summary>
@@ -214,10 +231,13 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
         var sw = new System.Diagnostics.Stopwatch();
         sw.Start();
-        ulong put = GetAIPutFromBoard(board, AIInformation);
+        ulong put = GetAIPutFromBoard_updated(board, AIInformation);
         sw.Stop();
         Debug.Log("elapsed "+sw.ElapsedMilliseconds);
+        Thread.Sleep(300);
+        stardisplay(put);
         board.UpdateBoard(put);
+
     }
 
 
@@ -233,9 +253,6 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
 
         // 再帰の終了条件: 読みの深さが上限に達した場合
         if(nowDepth == maxDepth) {
-            res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * playerInformation.WeightNumberOfHands
-                 + boardToEvaluate.CalcDifferenceSettledStone()     * playerInformation.WeightNumberOfSettledStones
-                 - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands;
             res = board.BitCount(boardToEvaluate.PlayerBoard);//added
             if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
             return res;
@@ -250,7 +267,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
             foreach(ulong put in puts) {
                 newBoard = new Board(boardToEvaluate);
                 newBoard.UpdateBoard(put);
-                res = System.Math.Max(res, EvaluationValue_fullsearch(newBoard, nowDepth + 1,maxDepth));
+                res = System.Math.Max(res, EvaluationValue_fullsearch(newBoard, nowDepth + 1, maxDepth));
             }
         }
 
@@ -260,7 +277,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
             foreach(ulong put in puts) {
                 newBoard = new Board(boardToEvaluate);
                 newBoard.UpdateBoard(put);
-                res = System.Math.Min(res, EvaluationValue_fullsearch(newBoard, nowDepth + 1,maxDepth));
+                res = System.Math.Min(res, EvaluationValue_fullsearch(newBoard, nowDepth + 1, maxDepth));
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
 
 public class OthelloAIForAIvsAI : MonoBehaviour
 {
@@ -171,6 +172,7 @@ public class OthelloAIForAIvsAI : MonoBehaviour
         PlayerInformation AIInformation = blackInformation;
         if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
         ulong put = GetAIPutFromBoard(board, AIInformation);
+        Thread.Sleep(300);
         board.UpdateBoard(put);
     }
 

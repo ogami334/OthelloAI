@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
 
 public class OthelloAIForAIvsHuman2 : MonoBehaviour
 {
@@ -214,6 +215,7 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         ulong put = GetAIPutFromBoard(board, AIInformation);
         sw.Stop();
         Debug.Log("elapsed "+sw.ElapsedMilliseconds);
+        Thread.Sleep(300);
         board.UpdateBoard(put);
     }
 
