@@ -17,7 +17,7 @@ class Player
     static PlayerInformation player1Information;
     static PlayerInformation player2Information;
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 1;
+    const int       MaxNodes1                       = 1000000;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
@@ -41,18 +41,18 @@ class Player
         //char opponent_char = (char) opponent_id;
         char player_char = Convert.ToChar(player_id+48);
         char opponent_char = Convert.ToChar(opponent_id+48);
-        Console.Error.WriteLine(player_char);
-        Console.Error.WriteLine(opponent_char);
+        //Console.Error.WriteLine(player_char);
+        //Console.Error.WriteLine(opponent_char);
         string player_st = player_id.ToString();
         string opponent_st = opponent_id.ToString();
-        Console.Error.WriteLine(player_id);
-        Console.Error.WriteLine(opponent_id); 
+        //Console.Error.WriteLine(player_id);
+        //Console.Error.WriteLine(opponent_id); 
         int boardSize = int.Parse(Console.ReadLine());
-        Console.Error.WriteLine(boardSize);
+        //Console.Error.WriteLine(boardSize);
         ulong playerboard = 0x0000000000000000;
         ulong opponentboard = 0x0000000000000000;
         ulong mask = 0x8000000000000000;
-        Console.Error.WriteLine(mask);
+        //Console.Error.WriteLine(mask);
 
 
         player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1);
@@ -69,24 +69,26 @@ class Player
         // game loop
         while (true)
         {
+            playerboard = 0x0000000000000000;
+            opponentboard = 0x0000000000000000;
             for (int i = 0; i < boardSize; i++)
             {
                 string line = Console.ReadLine(); // rows from top to bottom (viewer perspective).
                 for (int j = 0; j < boardSize; j++) {
                     //Console.Error.WriteLine(line[j]);
                     if (line[j]==player_char) {
-                        Console.Error.WriteLine("true");
-                        playerboard |= mask>>(8*i+j);
+                        //Console.Error.WriteLine("true");
+                        playerboard |= (mask>>(8*i+j));
                     }
                     else if (line[j]==opponent_char) {
-                        opponentboard |= mask>>(8*i+j);
-                        Console.Error.WriteLine("true");
+                        opponentboard |= (mask>>(8*i+j));
+                        //Console.Error.WriteLine("true");
                     }
                 }
-                Console.Error.WriteLine(line);
+                //Console.Error.WriteLine(line);
             }
-            System.Console.Error.WriteLine(playerboard);
-            System.Console.Error.WriteLine(opponentboard);
+            //System.Console.Error.WriteLine(playerboard.ToString("x"));
+            //System.Console.Error.WriteLine(opponentboard.ToString("x"));
             int actionCount = int.Parse(Console.ReadLine()); // number of legal actions for this turn.
             string[] possible_actions= new string[actionCount];
             for (int i = 0; i < actionCount; i++)
@@ -115,7 +117,9 @@ class Player
             else {
                 board.NowTurn = -100;
             }
+            //Console.Error.WriteLine(board.NowTurn);//get well
             ulong put = player.AIPlay(); 
+            //Console.Error.WriteLine(put.ToString("x"));
             string decided_action = player.PutToIO(put);
             //Console.WriteLine(possible_actions[0]); // a-h1-8
             Console.WriteLine(decided_action);
@@ -154,7 +158,7 @@ class Player
         PlayerInformation AIInformation = blackInformation;
         if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
         ulong put = GetAIPutFromBoard_updated(board, AIInformation);
-        board.UpdateBoard(put);
+        board.UpdateBoard(put);//remove
         return put;
     }
 
@@ -268,6 +272,9 @@ class Player
     }
 
     ulong GetAIPutFromBoard_updated(Board board, PlayerInformation AIInformation) {
+        //Console.Error.WriteLine(board.PlayerBoard.ToString("x"));
+        //Console.Error.WriteLine(board.OpponentBoard.ToString("x"));
+        //Console.Error.WriteLine(num_of_stones);
         ulong blackBoard = board.PlayerBoard;
         ulong whiteBoard = board.OpponentBoard;
         if (board.NowTurn == Board.WhiteTurn) {
@@ -275,9 +282,12 @@ class Player
             whiteBoard = board.PlayerBoard;
         }
         int num_of_stones = board.BitCount(board.PlayerBoard) + board.BitCount(board.OpponentBoard);
+        //Console.Error.WriteLine(board.PlayerBoard.ToString("x"));
+        //Console.Error.WriteLine(board.OpponentBoard.ToString("x"));
+        //Console.Error.WriteLine(num_of_stones);
         //Board nowBoard = new Board(board);
         int rest_depth = 64 - num_of_stones;
-        if (rest_depth <= 12) {
+        if (rest_depth <= 9) {
             const double INF = 1e9;
             List<ulong> puts = board.MakePlayerLegalPutList();
             //AIInformation.LastNumberOfHands.Add(puts.Count);
@@ -325,11 +335,11 @@ class Player
         int bi = rand.Next(0,bestPuts.Count);
         //int bi = Random.Range(0, bestPuts.Count);
         //System.Console.WriteLine(bestEval);
-        System.Console.Error.WriteLine(blackBoard);
-        System.Console.Error.WriteLine(whiteBoard);
-        System.Console.Error.WriteLine(bestEval);
-        System.Console.Error.WriteLine(bi);
-        System.Console.Error.WriteLine(bestPuts.Count);
+        //System.Console.Error.WriteLine(blackBoard);
+        //System.Console.Error.WriteLine(whiteBoard);
+        //System.Console.Error.WriteLine(bestEval);
+        //System.Console.Error.WriteLine(bi);
+        //System.Console.Error.WriteLine(bestPuts.Count);
         return bestPuts[bi];
         }
     }//add full-search option
