@@ -90,7 +90,6 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         // gamesLog = new GamesLog();
         RestartGame();
     }
-    
 
     void stardisplay(ulong put) {
         ulong mask = 0x8000000000000000;
@@ -98,7 +97,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
             for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
                 if ((mask & put) > 0) {
                     GameObject stone = Instantiate(star) as GameObject;
-                    stone.transform.position = new Vector3(x, y, 0);
+                    s.transform.position = new Vector3(x, y, 0);
                 }
                 mask >>= 1;
             }
