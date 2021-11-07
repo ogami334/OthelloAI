@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
+using System.IO;
 
 public class OthelloAIForAIvsHuman2 : MonoBehaviour
 {
     [SerializeField]private GameObject blackStone;
     [SerializeField]private GameObject whiteStone;
     [SerializeField]private GameObject batu;
-
+    [SerializeField]private GameObject star;
     public Board board;
     //変更
     PlayerInformation blackInformation;
@@ -35,6 +36,7 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     public double bestEval;
 
     void Start() {
+        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result2.txt","-1"+System.Environment.NewLine);
         Random.InitState(System.DateTime.Now.Millisecond);
         player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1);
         player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2);
@@ -115,6 +117,12 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
             Destroy(regal);
         }
     }
+    void DestroyAllStar() {
+        GameObject [] stars = GameObject.FindGameObjectsWithTag("Pointer");
+        foreach (GameObject star in stars) {
+            Destroy(star);
+        }
+    }
 
     /// <summary>
     /// 盤上の石を全て追加
@@ -163,6 +171,18 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         }
     }
 
+    void AddAllStarOnBoard(ulong put) {
+        ulong mask = 0x8000000000000000;
+        for (float y = 1.75f; y >= -1.75f; y -= 0.5f) {
+            for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
+                if ((mask & put) > 0) {
+                    GameObject stone = Instantiate(star) as GameObject;
+                    stone.transform.position = new Vector3(x, y, 0);
+                }
+                mask >>= 1;
+            }
+        }
+    }
     /// <summary>
     /// 人間のターンであるか判定
     /// </summary>
@@ -215,6 +235,9 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
         ulong put = GetAIPutFromBoard(board, AIInformation);
         sw.Stop();
         Debug.Log("elapsed "+sw.ElapsedMilliseconds);
+        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result2.txt",sw.ElapsedMilliseconds.ToString()+System.Environment.NewLine);
+        DestroyAllStar();
+        AddAllStarOnBoard(put);
         Thread.Sleep(300);
         board.UpdateBoard(put);
     }
@@ -256,11 +279,11 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
                 tmp_value = EvaluationValue(newBoard,nowDepth + 1, alpha,beta);
                 if (tmp_value > res) {
                     res = tmp_value;
-                    alpha = tmp_value;
+                    alpha = res;
                 }
                 //res = System.Math.Max(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));//compare child value vs tmp value
-                if (tmp_value > beta) {
-                    return tmp_value;
+                if (res > beta) {
+                    return res;
                 }
             }
         }
@@ -274,11 +297,11 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
                 tmp_value = EvaluationValue(newBoard,nowDepth +1 ,alpha,beta);
                 if (tmp_value < res) {
                     res = tmp_value;
-                    alpha = tmp_value;
+                    beta = res;
                 }
                 
-                if (tmp_value < alpha) {
-                    return tmp_value;
+                if (res < alpha) {
+                    return res;
                 }
                 //res = System.Math.Min(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));
             }

@@ -2,16 +2,15 @@
 //add full search at Late stage
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.IO;
 using System.Threading;
+using UnityEngine;
 
 public class OthelloAIForAIvsHuman3 : MonoBehaviour
 {
     [SerializeField]private GameObject blackStone;
     [SerializeField]private GameObject whiteStone;
-
     [SerializeField]private GameObject batu;
-
     [SerializeField]private GameObject star;
 
     public Board board;
@@ -23,7 +22,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     // GamesLog gamesLog;
 
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 1000000;
+    const int       MaxNodes1                       = 100000;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
@@ -39,6 +38,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     public double bestEval;
 
     void Start() {
+        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result3.txt","-1"+System.Environment.NewLine);
         Random.InitState(System.DateTime.Now.Millisecond);
         player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1);
         player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2);
@@ -240,6 +240,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         ulong put = GetAIPutFromBoard_updated(board, AIInformation);
         sw.Stop();
         Debug.Log("elapsed "+sw.ElapsedMilliseconds);
+        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result3.txt",sw.ElapsedMilliseconds.ToString()+System.Environment.NewLine);
         Thread.Sleep(300);
         DestroyAllStar();
         AddAllStarOnBoard(put);
@@ -328,11 +329,11 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
                 tmp_value = EvaluationValue(newBoard,nowDepth + 1, alpha,beta);
                 if (tmp_value > res) {
                     res = tmp_value;
-                    alpha = tmp_value;
+                    alpha = res;
                 }
                 //res = System.Math.Max(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));//compare child value vs tmp value
-                if (tmp_value > beta) {
-                    return tmp_value;
+                if (res> beta) {
+                    return res;
                 }
             }
         }
@@ -346,11 +347,11 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
                 tmp_value = EvaluationValue(newBoard,nowDepth +1 ,alpha,beta);
                 if (tmp_value < res) {
                     res = tmp_value;
-                    alpha = tmp_value;
+                    beta = res;
                 }
                 
-                if (tmp_value < alpha) {
-                    return tmp_value;
+                if (res < alpha) {
+                    return res;
                 }
                 //res = System.Math.Min(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));
             }
@@ -477,11 +478,11 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     /// <returns>AIの着手を座標として出力 (例: F5)</returns>
     string GetAIPutAsCoordinateFromStrBoard(string strBoard, bool AIIsBlack, PlayerInformation AIInformation) {
         Board board = StrBoardToBoard(strBoard, AIIsBlack);
-        var sw = new System.Diagnostics.Stopwatch();
-        sw.Start();
+        //var sw = new System.Diagnostics.Stopwatch();
+        //sw.Start();
         ulong put = GetAIPutFromBoard_updated(board, AIInformation);
-        sw.Stop();
-        Debug.Log("elapsed "+sw.ElapsedMilliseconds);
+        //sw.Stop();
+        //Debug.Log("elapsed "+sw.ElapsedMilliseconds);
         string coordinate = BitToCoordinate(put);
         return coordinate;
     }//changed

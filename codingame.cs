@@ -17,7 +17,7 @@ class Player
     static PlayerInformation player1Information;
     static PlayerInformation player2Information;
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 1000000;
+    const int       MaxNodes1                       = 10000000;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
@@ -236,11 +236,11 @@ class Player
                 tmp_value = EvaluationValue(newBoard,nowDepth + 1, alpha,beta);
                 if (tmp_value > res) {
                     res = tmp_value;
-                    alpha = tmp_value;
+                    alpha = res;
                 }
                 //res = System.Math.Max(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));//compare child value vs tmp value
-                if (tmp_value > beta) {
-                    return tmp_value;
+                if (res > beta) {
+                    return res;
                 }
             }
         }
@@ -254,11 +254,11 @@ class Player
                 tmp_value = EvaluationValue(newBoard,nowDepth +1 ,alpha,beta);
                 if (tmp_value < res) {
                     res = tmp_value;
-                    alpha = tmp_value;
+                    beta = res;
                 }
                 
-                if (tmp_value < alpha) {
-                    return tmp_value;
+                if (res < alpha) {
+                    return res;
                 }
                 //res = System.Math.Min(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));
             }
