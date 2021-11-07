@@ -64,6 +64,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
             UpdateBoardDisplay();
             DestroyAllRegalPut();
             AddAllRegalPut();
+            //DestroyAllStar();
         }
     }
 
@@ -89,19 +90,6 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     public void RestartButtonCilcked() {
         // gamesLog = new GamesLog();
         RestartGame();
-    }
-
-    void stardisplay(ulong put) {
-        ulong mask = 0x8000000000000000;
-        for (float y = 1.75f; y >= -1.75f; y -= 0.5f) {
-            for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
-                if ((mask & put) > 0) {
-                    GameObject stone = Instantiate(star) as GameObject;
-                    s.transform.position = new Vector3(x, y, 0);
-                }
-                mask >>= 1;
-            }
-        }
     }
 
     /// <summary>
@@ -130,6 +118,13 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         foreach (GameObject regal in regals) {
             //Debug.Log("regal");
             Destroy(regal);
+        }
+    }
+
+    void DestroyAllStar() {
+        GameObject [] stars = GameObject.FindGameObjectsWithTag("Pointer");
+        foreach (GameObject star in stars) {
+            Destroy(star);
         }
     }
 
@@ -181,6 +176,18 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         }
     }
 
+    void AddAllStarOnBoard(ulong put) {
+        ulong mask = 0x8000000000000000;
+        for (float y = 1.75f; y >= -1.75f; y -= 0.5f) {
+            for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
+                if ((mask & put) > 0) {
+                    GameObject stone = Instantiate(star) as GameObject;
+                    stone.transform.position = new Vector3(x, y, 0);
+                }
+                mask >>= 1;
+            }
+        }
+    }
     /// <summary>
     /// 人間のターンであるか判定
     /// </summary>
@@ -234,7 +241,8 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         sw.Stop();
         Debug.Log("elapsed "+sw.ElapsedMilliseconds);
         Thread.Sleep(300);
-        stardisplay(put);
+        DestroyAllStar();
+        AddAllStarOnBoard(put);
         board.UpdateBoard(put);
 
     }
