@@ -21,11 +21,15 @@ class Player
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
+
+    const double    WeightCellPoints1               = 0.5;
     const bool      isHuman2                        = true;
     const int       MaxNodes2                       = 1000;
     const double    WeightNumberOfHands2            = 0.3;
     const double    WeightNumberOfSettledStones2    = 1;
     const double    WeightDangerousHands2           = 2;
+    
+    const double    WeightCellPoints2               = 0.5;
     const int maxGames = 1;
     const int CntGames = 0;
     double bestEval = -(1e9);
@@ -55,8 +59,8 @@ class Player
         //Console.Error.WriteLine(mask);
 
 
-        player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1);
-        player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2);
+        player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1,WeightCellPoints1);
+        player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2,WeightCellPoints2);
         
         if (player_id==0) {
             blackInformation = player1Information;
@@ -220,6 +224,7 @@ class Player
             res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * playerInformation.WeightNumberOfHands
                  + boardToEvaluate.CalcDifferenceSettledStone()     * playerInformation.WeightNumberOfSettledStones
                  - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands;
+                 + boardToEvaluate.CalcDifferenceCellPoints()       * playerInformation.WeightCellPoints;
             if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
             return res;
         }
@@ -361,8 +366,9 @@ public class PlayerInformation
     public double WeightNumberOfHands{ get; set; }
     public double WeightNumberOfSettledStones{ get; set; }
     public double WeightDangerousHands{ get; set; }
+    public double WeightCellPoints{ get; set; }
 
-    public PlayerInformation(bool IsHuman, int MaxNodes, double WeightNumberOfHands, double WeightNumberOfSettledStones, double WeightDangerousHands) {
+    public PlayerInformation(bool IsHuman, int MaxNodes, double WeightNumberOfHands, double WeightNumberOfSettledStones, double WeightDangerousHands, double WeightCellPoints) {
         this.IsHuman = IsHuman;
         this.MaxNodes = MaxNodes;
         this.LastAvgNumberOfHands = 10.0;
@@ -370,6 +376,7 @@ public class PlayerInformation
         this.WeightNumberOfHands            = WeightNumberOfHands;
         this.WeightNumberOfSettledStones    = WeightNumberOfSettledStones;
         this.WeightDangerousHands           = WeightDangerousHands;
+        this.WeightCellPoints               = WeightCellPoints;
     }
 
     public PlayerInformation(PlayerInformation playerInformation) {
@@ -380,6 +387,7 @@ public class PlayerInformation
         this.WeightNumberOfHands            = playerInformation.WeightNumberOfHands;
         this.WeightNumberOfSettledStones    = playerInformation.WeightNumberOfSettledStones;
         this.WeightDangerousHands           = playerInformation.WeightDangerousHands;
+        this.WeightCellPoints               = playerInformation.WeightCellPoints;
     }
 
     public void UpdateLastAvgNumberOfHands() {
@@ -391,7 +399,6 @@ public class PlayerInformation
         LastNumberOfHands.Clear();
     }
 }
-
 public class Board {
     
     // MARK: Constant

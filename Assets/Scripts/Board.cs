@@ -138,6 +138,79 @@ public class Board {
     }
 
     /// <summary>
+    /// 手番側が負けているか
+    /// </summary>
+    public bool IsLose() {
+        if (GameFinished) {
+            int blackScore = BitCount(PlayerBoard);
+            int whiteScore = BitCount(OpponentBoard);
+            if (NowTurn ==WhiteTurn) {
+                int tmp = blackScore;
+                blackScore = whiteScore;
+                whiteScore = tmp;
+            }
+            if (blackScore < whiteScore) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+
+    }
+
+    /// <summary>
+    /// 手番側が引き分けているか
+    /// </summary>
+    public bool IsDraw() {
+        if (GameFinished) {
+            int blackScore = BitCount(PlayerBoard);
+            int whiteScore = BitCount(OpponentBoard);
+            if (NowTurn ==WhiteTurn) {
+                int tmp = blackScore;
+                blackScore = whiteScore;
+                whiteScore = tmp;
+            }
+            if (blackScore == whiteScore) {
+                return true;
+            }
+            else {
+                return false;
+            }            
+        }        
+        else {
+            return false;
+        }
+    }
+    /// <summary>
+    /// 手番側が勝っているか
+    /// </summary>
+    public bool IsWin() {
+        if (GameFinished) {
+            int blackScore = BitCount(PlayerBoard);
+            int whiteScore = BitCount(OpponentBoard);
+            if (NowTurn ==WhiteTurn) {
+                int tmp = blackScore;
+                blackScore = whiteScore;
+                whiteScore = tmp;
+            }
+            if (blackScore > whiteScore) {
+                return true;
+            }
+            else {
+                return false;
+            }    
+        }
+        else {
+            return false;
+        }
+ 
+    }
+
+    /// <summary>
     /// 反転箇所を求める
     /// </summary>
     /// <param name="put">着手位置のビット値</param>
@@ -269,6 +342,20 @@ public class Board {
         }
         return legalPutList;
     }
+
+    public ulong Random_action() {
+        List <ulong> legalPutList;
+        legalPutList = MakePlayerLegalPutList();
+        int length = legalPutList.Count;
+        //Debug.Log("playerboard"+PlayerBoard.ToString("x"));
+        //Debug.Log("opponentboard"+OpponentBoard.ToString("x"));
+        //Debug.Log("length"+length);
+        //Debug.Log("fin"+ GameFinished);
+        System.Random rand = new System.Random();
+        int bi = rand.Next(0,length);
+        return legalPutList[bi];
+    }
+
 
     /// <summary>
     /// 着手をもとにPlayerBoard, OpponentBoardを更新

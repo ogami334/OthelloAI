@@ -20,10 +20,12 @@ public class OthelloAIForAIvsAI : MonoBehaviour
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
+    const double    WeightCellPoints1               = 0.0;
     const bool      isHuman2                        = false;
     const int       MaxNodes2                       = 10;
     const double    WeightNumberOfHands2            = 0.3;
     const double    WeightNumberOfSettledStones2    = 1;
+    const double    WeightCellPoints2               = 0.0;
     const double    WeightDangerousHands2           = 2;
     
     const int maxGames = 1;
@@ -31,8 +33,8 @@ public class OthelloAIForAIvsAI : MonoBehaviour
 
     void Start() {
         Random.InitState(System.DateTime.Now.Millisecond);
-        player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1);
-        player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2);
+        player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1,WeightCellPoints1);
+        player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2,WeightCellPoints2);
         CntGames = 0;
         RestartButtonCilcked();
     }
@@ -195,7 +197,8 @@ public class OthelloAIForAIvsAI : MonoBehaviour
         if(nowDepth == maxDepth) {
             res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * playerInformation.WeightNumberOfHands
                  + boardToEvaluate.CalcDifferenceSettledStone()     * playerInformation.WeightNumberOfSettledStones
-                 - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands;
+                 - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands
+                 + boardToEvaluate.CalcDifferenceCellPoints()       * playerInformation.WeightCellPoints; 
             if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
             return res;
         }

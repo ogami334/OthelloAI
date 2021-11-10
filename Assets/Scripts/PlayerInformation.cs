@@ -11,8 +11,9 @@ public class PlayerInformation
     public double WeightNumberOfHands{ get; set; }
     public double WeightNumberOfSettledStones{ get; set; }
     public double WeightDangerousHands{ get; set; }
+    public double WeightCellPoints{ get; set; }
 
-    public PlayerInformation(bool IsHuman, int MaxNodes, double WeightNumberOfHands, double WeightNumberOfSettledStones, double WeightDangerousHands) {
+    public PlayerInformation(bool IsHuman, int MaxNodes, double WeightNumberOfHands, double WeightNumberOfSettledStones, double WeightDangerousHands, double WeightCellPoints) {
         this.IsHuman = IsHuman;
         this.MaxNodes = MaxNodes;
         this.LastAvgNumberOfHands = 10.0;
@@ -20,6 +21,7 @@ public class PlayerInformation
         this.WeightNumberOfHands            = WeightNumberOfHands;
         this.WeightNumberOfSettledStones    = WeightNumberOfSettledStones;
         this.WeightDangerousHands           = WeightDangerousHands;
+        this.WeightCellPoints               = WeightCellPoints;
     }
 
     public PlayerInformation(PlayerInformation playerInformation) {
@@ -30,6 +32,7 @@ public class PlayerInformation
         this.WeightNumberOfHands            = playerInformation.WeightNumberOfHands;
         this.WeightNumberOfSettledStones    = playerInformation.WeightNumberOfSettledStones;
         this.WeightDangerousHands           = playerInformation.WeightDangerousHands;
+        this.WeightCellPoints               = playerInformation.WeightCellPoints;
     }
 
     public void UpdateLastAvgNumberOfHands() {

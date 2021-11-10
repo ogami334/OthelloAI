@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using UnityEngine;
 
-public class OthelloAIForAIvsHuman3 : MonoBehaviour
+public class OthelloAIForAIvsHuman4 : MonoBehaviour
 {
     [SerializeField]private GameObject blackStone;
     [SerializeField]private GameObject whiteStone;
@@ -42,6 +42,10 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
 
     Dictionary<Board,double> EvalDict1 = new Dictionary<Board, double>();
     Dictionary<Board,double> EvalDict2 = new Dictionary<Board, double>();
+
+    const int simulation = 1000;
+
+    Node root_node;
     void Start() {
         File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result3.txt","-1"+System.Environment.NewLine);
         Random.InitState(System.DateTime.Now.Millisecond);
@@ -69,7 +73,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
             UpdateBoardDisplay();
             DestroyAllRegalPut();
             AddAllRegalPut();
-            //DestroyAllStar();
+            DestroyAllStar();
         }
     }
 
@@ -145,6 +149,8 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
             blackBoard = board.OpponentBoard;
             whiteBoard = board.PlayerBoard;
         }
+        //Debug.Log("blackBoard"+blackBoard);
+        //Debug.Log("whiteBoard"+whiteBoard);
         ulong mask = 0x8000000000000000;
         for (float y = 1.75f; y >= -1.75f; y -= 0.5f) {
             for (float x = -1.75f; x <= 1.75f; x += 0.5f) {
@@ -240,12 +246,18 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
     void AIPlay() {
         PlayerInformation AIInformation = blackInformation;
         if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
-        var sw = new System.Diagnostics.Stopwatch();
-        sw.Start();
-        ulong put = GetAIPutFromBoard_updated(board, AIInformation);
-        sw.Stop();
-        Debug.Log("elapsed "+sw.ElapsedMilliseconds);
-        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result3.txt",sw.ElapsedMilliseconds.ToString()+System.Environment.NewLine);
+        Node root_node = new Node();
+        root_node.board = board;
+        MonteCarloTreeSearch MCTS = new MonteCarloTreeSearch();
+        MCTS.Train(root_node,10000);
+        ulong put = MCTS.SelectAction(root_node);
+        //var sw = new System.Diagnostics.Stopwatch();
+        //sw.Start();
+        //ulong put = SelectAction(node);
+        //ulong put = GetAIPutFromBoard_updated(board, AIInformation);
+        //sw.Stop();
+        //Debug.Log("elapsed "+sw.ElapsedMilliseconds);
+        //File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result3.txt",sw.ElapsedMilliseconds.ToString()+System.Environment.NewLine);
         Thread.Sleep(300);
         DestroyAllStar();
         AddAllStarOnBoard(put);

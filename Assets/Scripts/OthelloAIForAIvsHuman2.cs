@@ -24,11 +24,13 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
+    const double    WeightCellPoints1               = 0.0;
     const bool      isHuman2                        = true;
     const int       MaxNodes2                       = 100;
     const double    WeightNumberOfHands2            = 0.3;
     const double    WeightNumberOfSettledStones2    = 1;
     const double    WeightDangerousHands2           = 2;
+    const double    WeightCellPoints2               = 0.0;
     
     const int maxGames = 1;
     public int CntGames{ get; set; } 
@@ -38,8 +40,8 @@ public class OthelloAIForAIvsHuman2 : MonoBehaviour
     void Start() {
         File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result2.txt","-1"+System.Environment.NewLine);
         Random.InitState(System.DateTime.Now.Millisecond);
-        player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1);
-        player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2);
+        player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1,WeightCellPoints1);
+        player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2,WeightCellPoints2);
         CntGames = 0;
         RestartButtonCilcked();
     }
