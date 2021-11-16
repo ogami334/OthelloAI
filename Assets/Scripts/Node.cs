@@ -10,6 +10,9 @@ public class Node {
     public int expand_base = 10;
     public List<Node> children = new List<Node>();
 
+    public int sum1 = 0;
+    public int sum2 = 0;
+
 
     public Node() {
         this.board = board;
@@ -17,6 +20,8 @@ public class Node {
         this.visited = 0;
         this.expand_base = 10;
         this.children = new List<Node>();
+        this.sum1 = 0;
+        this.sum2 = 0;
     }
 
     public Node(Node node) {
@@ -25,6 +30,8 @@ public class Node {
         this.visited = node.visited;
         this.expand_base = node.expand_base;
         this.children = node.children;
+        this.sum1 = 0;
+        this.sum2 = 0;
     }
 
 
@@ -105,21 +112,21 @@ public class Node {
 
     public int PlayOut(Board board) {
         if (board.IsLose()) {
-            Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
-            Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
-            Debug.Log("Lose");
+            //Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
+            //Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
+            //Debug.Log("Lose");
             return -1;
         }
         if (board.IsDraw()) {
-            Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
-            Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
-            Debug.Log("Draw");
+            //Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
+            //Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
+            //Debug.Log("Draw");
             return 0;
         }
         if (board.IsWin()) {
-            Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
-            Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
-            Debug.Log("Win");
+            //Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
+            //Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
+            //Debug.Log("Win");
             return 1;
         }
         return -PlayOut(GenerateUpdatedBoard(board,board.Random_action()));

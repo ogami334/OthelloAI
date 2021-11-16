@@ -343,6 +343,38 @@ public class Board {
         return legalPutList;
     }
 
+    public int CalcOpenness(ulong put,Board origboard) {
+        int res = 0;
+        ulong orig = origboard.PlayerBoard;
+        ulong newb = OpponentBoard;
+        ulong newbp = PlayerBoard;
+        //newboard ^= put;
+        ulong mask = 0x8000000000000000;
+        for (int i=0;i<8;i++) {
+            for (int j=0;j<8;j++) {
+                if (((orig&mask) ^ (newb&mask) ^ put) >0) {
+                    for (int dy=-1;dy<2;dy++) {
+                        for (int dx=-1;dx<2;dx++) {
+                            if ((0<=dx) &&(dx<8) && (0<=dy) && (dy<8)) {
+                                if (((newb & (((ulong)1)<<(64-8*i-8*dy-j-dx))) ==0) && ((newbp & (((ulong)1)<<(64-8*i-8*dy-j-dx)) ) ==0)) {
+                                    res += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                mask >>=1;
+            }
+        }
+        //Console.Error.WriteLine(orig);
+        //Console.Error.WriteLine(newb);
+        //Console.Error.WriteLine(put);
+        //Debug.Log("orig"+orig.ToString("x"));
+        //Debug.Log("newb"+newb.ToString("x"));
+        //Debug.Log("put"+put.ToString("x"));
+        return res;        
+    }
+
     public ulong Random_action() {
         List <ulong> legalPutList;
         legalPutList = MakePlayerLegalPutList();

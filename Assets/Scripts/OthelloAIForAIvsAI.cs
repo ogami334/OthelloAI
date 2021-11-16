@@ -8,7 +8,7 @@ public class OthelloAIForAIvsAI : MonoBehaviour
     [SerializeField]private GameObject blackStone;
     [SerializeField]private GameObject whiteStone;
 
-    Board board;
+    public Board board;
     PlayerInformation blackInformation;
     PlayerInformation whiteInformation;
     PlayerInformation player1Information;
@@ -16,13 +16,13 @@ public class OthelloAIForAIvsAI : MonoBehaviour
     // GamesLog gamesLog;
 
     const bool      isHuman1                        = false;
-    const int       MaxNodes1                       = 10;
+    const int       MaxNodes1                       = 1;
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
     const double    WeightCellPoints1               = 0.0;
     const bool      isHuman2                        = false;
-    const int       MaxNodes2                       = 10;
+    const int       MaxNodes2                       = 1;
     const double    WeightNumberOfHands2            = 0.3;
     const double    WeightNumberOfSettledStones2    = 1;
     const double    WeightCellPoints2               = 0.0;
@@ -30,6 +30,7 @@ public class OthelloAIForAIvsAI : MonoBehaviour
     
     const int maxGames = 1;
     public int CntGames{ get; set; } 
+    public double bestEval;
 
     void Start() {
         Random.InitState(System.DateTime.Now.Millisecond);
@@ -172,10 +173,21 @@ public class OthelloAIForAIvsAI : MonoBehaviour
     /// <summary>
     void AIPlay() {
         PlayerInformation AIInformation = blackInformation;
-        if(board.NowTurn == Board.WhiteTurn) AIInformation = whiteInformation;
-        ulong put = GetAIPutFromBoard(board, AIInformation);
+        ulong put;
+        if(board.NowTurn == Board.WhiteTurn) {
+            AIInformation = whiteInformation;
+            Node root_node = new Node();
+            root_node.board = board;
+            MonteCarloTreeSearch MCTS = new MonteCarloTreeSearch();
+            MCTS.Train(root_node,40000);
+            put = MCTS.SelectAction(root_node);
+        }
+        else {
+            put = GetAIPutFromBoard(board, AIInformation);
+        }
         Thread.Sleep(300);
         board.UpdateBoard(put);
+
     }
 
     /// <summary>
@@ -192,6 +204,8 @@ public class OthelloAIForAIvsAI : MonoBehaviour
         PlayerInformation playerInformation = blackInformation;
         if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
         int maxDepth = CalcMaxDepthFromPlayerInformation(playerInformation);
+        maxDepth = 1;
+        Debug.Log("maxDepth"+ maxDepth);
 
         // 再帰の終了条件: 読みの深さが上限に達した場合
         if(nowDepth == maxDepth) {
@@ -250,7 +264,7 @@ public class OthelloAIForAIvsAI : MonoBehaviour
         AIInformation.LastNumberOfHands.Add(puts.Count);
 
         double[] evals = new double[puts.Count];
-        double bestEval = -INF;
+        bestEval = -INF;
         for (int i = 0; i < puts.Count; ++i) {
             Board newBoard = new Board(board);
             newBoard.UpdateBoard(puts[i]);

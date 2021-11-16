@@ -21,8 +21,8 @@ class Player
     const double    WeightNumberOfHands1            = 0.3;
     const double    WeightNumberOfSettledStones1    = 1;
     const double    WeightDangerousHands1           = 2;
+    const double    WeightCellPoints1               = 0.2;
 
-    const double    WeightCellPoints1               = 0.5;
     const bool      isHuman2                        = true;
     const int       MaxNodes2                       = 1000;
     const double    WeightNumberOfHands2            = 0.3;
@@ -209,6 +209,66 @@ class Player
         return res;
     }
 
+    double EvaluationValue_fullsearch_ab(Board boardToEvaluate, int nowDepth,int maxDepth,double alpha,double beta) {
+    double res;
+    const double INF = 1e9;
+    double tmp_value;
+    Board newBoard;
+
+    PlayerInformation playerInformation = blackInformation;
+    if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
+    //int maxDepth = CalcMaxDepthFromPlayerInformation(playerInformation);
+
+
+    // 再帰の終了条件: 読みの深さが上限に達した場合
+    if(nowDepth == maxDepth) {
+        res = board.BitCount(boardToEvaluate.PlayerBoard);//added
+        if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
+        return res;
+    }
+    
+    List<ulong> puts = boardToEvaluate.MakePlayerLegalPutList();
+    //playerInformation.LastNumberOfHands.Add(puts.Count);
+
+    // 現在のノードが手番側の場合
+    if(boardToEvaluate.NowTurn == board.NowTurn) {
+        res = -INF;
+        foreach(ulong put in puts) {
+            newBoard = new Board(boardToEvaluate);
+            newBoard.UpdateBoard(put);
+            tmp_value = EvaluationValue_fullsearch_ab(newBoard,nowDepth+1,maxDepth,alpha,beta);
+            if (tmp_value > res) {
+                res = tmp_value;
+                alpha = res;
+            }
+            if (res > beta) {
+                return res;
+            }
+            //res = System.Math.Max(res, EvaluationValue_fullsearch_ab(newBoard, nowDepth + 1, maxDepth,alpha,beta));
+        }
+    }
+
+    // 現在のノードが相手側の場合
+    else {
+        res = INF;
+        foreach(ulong put in puts) {
+            newBoard = new Board(boardToEvaluate);
+            newBoard.UpdateBoard(put);
+            tmp_value = EvaluationValue_fullsearch_ab(newBoard,nowDepth+1,maxDepth,alpha,beta);
+            if (tmp_value < res) {
+                res = tmp_value;
+                beta = res;
+            }
+            if (res<alpha) {
+                return res;
+            }
+            //res = System.Math.Min(res, EvaluationValue_fullsearch_ab(newBoard, nowDepth + 1, maxDepth,alpha,beta));
+        }
+    }
+
+    return res;
+    }
+
     double EvaluationValue(Board boardToEvaluate, int nowDepth,double alpha,double beta) {
         double res;
         const double INF = 1e9;
@@ -223,7 +283,7 @@ class Player
         if(nowDepth == maxDepth) {
             res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * playerInformation.WeightNumberOfHands
                  + boardToEvaluate.CalcDifferenceSettledStone()     * playerInformation.WeightNumberOfSettledStones
-                 - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands;
+                 - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands
                  + boardToEvaluate.CalcDifferenceCellPoints()       * playerInformation.WeightCellPoints;
             if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
             return res;
@@ -303,7 +363,7 @@ class Player
             for (int i = 0; i < puts.Count; ++i) {
                 Board newBoard = new Board(board);
                 newBoard.UpdateBoard(puts[i]);
-                evals[i] = EvaluationValue_fullsearch(newBoard, 1 ,rest_depth);
+                evals[i] = EvaluationValue_fullsearch_ab(newBoard, 1 ,rest_depth,-INF,INF);
                 if (evals[i] > bestEval) bestEval = evals[i]; 
             }
             //AIInformation.UpdateLastAvgNumberOfHands();

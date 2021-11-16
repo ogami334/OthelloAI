@@ -51,6 +51,8 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         RestartButtonCilcked();
     }
 
+
+
     void Update() {
         if(board.GameFinished) {
             if (++CntGames < maxGames) RestartButtonCilcked();
@@ -557,6 +559,81 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
             EvalDict1[boardToEvaluate] = res;
             return res;
     }
+
+
+
+    double EvaluationValue_Memo_Open(Board origBoard,ulong recput,Board boardToEvaluate, int nowDepth,double alpha,double beta) {
+            double res;
+            const double INF = 1e9;
+            double tmp_value;
+            Board newBoard;
+            if (EvalDict1.ContainsKey(boardToEvaluate)) {
+                return EvalDict1[boardToEvaluate];
+            }
+
+            PlayerInformation playerInformation = blackInformation;
+            if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
+            int maxDepth = CalcMaxDepthFromPlayerInformation(playerInformation);
+
+            // 再帰の終了条件: 読みの深さが上限に達した場合
+            if(nowDepth == maxDepth) {
+                res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * playerInformation.WeightNumberOfHands
+                    + boardToEvaluate.CalcDifferenceSettledStone()     * playerInformation.WeightNumberOfSettledStones
+                    - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands
+                    + boardToEvaluate.CalcDifferenceCellPoints()       * playerInformation.WeightCellPoints
+                    - boardToEvaluate.CalcOpenness(recput,origBoard) *1000;
+                if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
+                EvalDict1[boardToEvaluate] = res;
+                return res;
+            }
+            
+            List<ulong> puts = boardToEvaluate.MakePlayerLegalPutList();
+            playerInformation.LastNumberOfHands.Add(puts.Count);
+
+            // 現在のノードが手番側の場合
+            if(boardToEvaluate.NowTurn == board.NowTurn) {
+                res = -INF;
+                foreach(ulong put in puts) {
+                    newBoard = new Board(boardToEvaluate);
+                    newBoard.UpdateBoard(put);
+                    tmp_value = EvaluationValue_Memo_Open(boardToEvaluate,recput,newBoard,nowDepth + 1, alpha,beta);
+                    if (tmp_value > res) {
+                        res = tmp_value;
+                        alpha = res;
+                    }
+                    //res = System.Math.Max(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));//compare child value vs tmp value
+                    if (res> beta) {
+                        EvalDict1[boardToEvaluate] = res;
+                        return res;
+                    }
+                }
+            }
+
+            // 現在のノードが相手側の場合
+            else {
+                res = INF;
+                foreach(ulong put in puts) {
+                    newBoard = new Board(boardToEvaluate);
+                    newBoard.UpdateBoard(put);
+                    tmp_value = EvaluationValue_Memo_Open(boardToEvaluate,recput,newBoard,nowDepth +1 ,alpha,beta);
+                    if (tmp_value < res) {
+                        res = tmp_value;
+                        beta = res;
+                    }
+                    
+                    if (res < alpha) {
+                        EvalDict1[boardToEvaluate] = res;
+                        return res;
+                    }
+                    //res = System.Math.Min(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));
+                }
+            }
+            EvalDict1[boardToEvaluate] = res;
+            return res;
+    }
+
+
+
     /// <summary>
     /// PlayerInformationから読みの深さの上限を計算する
     /// </summary>
@@ -583,7 +660,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         for (int i = 0; i < puts.Count; ++i) {
             Board newBoard = new Board(board);
             newBoard.UpdateBoard(puts[i]);
-            evals[i] = EvaluationValue_Memo(newBoard, 1, -INF, INF);
+            evals[i] = EvaluationValue_Memo_Open(board,puts[i],newBoard, 1, -INF, INF);
             if (evals[i] > bestEval) bestEval = evals[i]; 
         }
         AIInformation.UpdateLastAvgNumberOfHands();
@@ -640,7 +717,7 @@ public class OthelloAIForAIvsHuman3 : MonoBehaviour
         for (int i = 0; i < puts.Count; ++i) {
             Board newBoard = new Board(board);
             newBoard.UpdateBoard(puts[i]);
-            evals[i] = EvaluationValue(newBoard, 1, -INF, INF);
+            evals[i] = EvaluationValue_Memo_Open(board,puts[i],newBoard, 1, -INF, INF);
             if (evals[i] > bestEval) bestEval = evals[i]; 
         }
         AIInformation.UpdateLastAvgNumberOfHands();
