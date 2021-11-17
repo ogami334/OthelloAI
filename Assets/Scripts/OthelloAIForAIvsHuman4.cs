@@ -249,7 +249,7 @@ public class OthelloAIForAIvsHuman4 : MonoBehaviour
         Node root_node = new Node();
         root_node.board = board;
         MonteCarloTreeSearch MCTS = new MonteCarloTreeSearch();
-        MCTS.Train(root_node,20000);
+        MCTS.Train(root_node,1000);
         ulong put = MCTS.SelectAction(root_node);
         //var sw = new System.Diagnostics.Stopwatch();
        //sw.Start();

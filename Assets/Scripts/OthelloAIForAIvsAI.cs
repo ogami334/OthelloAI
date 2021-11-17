@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 using System.Threading;
 
 public class OthelloAIForAIvsAI : MonoBehaviour
@@ -32,7 +33,10 @@ public class OthelloAIForAIvsAI : MonoBehaviour
     public int CntGames{ get; set; } 
     public double bestEval;
 
+    public int simulation = 1000;
+
     void Start() {
+        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\Mtest.txt","current_simulation "+simulation.ToString()+System.Environment.NewLine);
         Random.InitState(System.DateTime.Now.Millisecond);
         player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1,WeightCellPoints1);
         player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2,WeightCellPoints2);
@@ -42,6 +46,7 @@ public class OthelloAIForAIvsAI : MonoBehaviour
 
     void Update() {
         if(board.GameFinished) {
+            board.GetResult2();
             if (++CntGames < maxGames) RestartButtonCilcked();
         }
         else if(IsHumanTurn()) {
@@ -179,7 +184,7 @@ public class OthelloAIForAIvsAI : MonoBehaviour
             Node root_node = new Node();
             root_node.board = board;
             MonteCarloTreeSearch MCTS = new MonteCarloTreeSearch();
-            MCTS.Train(root_node,40000);
+            MCTS.Train(root_node,simulation);
             put = MCTS.SelectAction(root_node);
         }
         else {
@@ -189,6 +194,14 @@ public class OthelloAIForAIvsAI : MonoBehaviour
         board.UpdateBoard(put);
 
     }
+
+    /*void AIPlay() {
+        PlayerInformation AIInformation = blackInformation;
+        ulong put;
+        put = GetAIPutFromBoard(board, AIInformation);
+        Thread.Sleep(300);
+        board.UpdateBoard(put);
+    }*/
 
     /// <summary>
     /// 評価値を再帰的に求める

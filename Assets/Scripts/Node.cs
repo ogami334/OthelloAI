@@ -24,7 +24,7 @@ public class Node {
         this.sum2 = 0;
     }
 
-    public Node(Node node) {
+    /*public Node(Node node) {
         this.board = node.board;
         this.reward = node.reward;
         this.visited = node.visited;
@@ -32,28 +32,38 @@ public class Node {
         this.children = node.children;
         this.sum1 = 0;
         this.sum2 = 0;
-    }
+    }*/
 
 
     public double Ucb1(int sn, int n ,int w) {
-        return -w/n + Math.Pow((2*Math.Log(sn)/n),0.5);
+        //Debug.Log("w "+w);
+        //Debug.Log("n "+n);
+        //Debug.Log("SN "+sn);
+        //Debug.Log("w/n "+w/n);
+        //Debug.Log("w/n "+ ((double)w)/ ((double)n) );
+        return  -((double)w)/((double)n) + 8.0*Math.Pow((2*Math.Log(sn)/n),0.5)/3.0;
+        //return -w/n;
     }
+
 
     public Node NextChildBasedUcb() {
         int sn = 0;
         foreach (Node child in children) {
             sn += child.visited;
-            if (child.visited ==0) {
+            if (child.visited == 0) {
                 return child;
             }
         }
         int index = -1;
-        int guard = -2147483648;
+        double guard = -100000;
         for (int i=0;i<children.Count;i++) {
-            if (Ucb1(sn,children[i].visited,children[i].reward) > guard) {
+            double tmp = Ucb1(sn,children[i].visited,children[i].reward);
+            if (tmp > guard) {
                 index = i;
+                guard = tmp;
             }
         }
+        //Debug.Log("selected"+index);
         return children[index];
     }
 
@@ -71,7 +81,7 @@ public class Node {
             visited += 1;
             return value;
         }
-        else if (board.GameFinished) {
+        else if (board.IsDraw()) {
             value = 0;
             reward += value;
             visited += 1;

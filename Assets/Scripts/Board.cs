@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.IO;
 using UnityEngine;
 
 public class Board {
@@ -135,8 +136,34 @@ public class Board {
         } else {
             result = "Draw";
         }
+        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result_check.txt","number_of_regal " + result + System.Environment.NewLine);     
     }
 
+
+    public void GetResult2() {
+        // 石数を取得
+        int blackScore = BitCount(PlayerBoard);
+        int whiteScore = BitCount(OpponentBoard);
+        string result;
+
+
+        if (NowTurn == WhiteTurn) {
+            int tmp = blackScore;
+            blackScore = whiteScore;
+            whiteScore = tmp;
+        }
+        // 勝敗情報を取得
+        if (blackScore > whiteScore) {
+            result = "Black win";
+            blackScore = NumCell - whiteScore;
+        } else if (blackScore < whiteScore) {
+            result = "White win";
+            whiteScore = NumCell - blackScore;
+        } else {
+            result = "Draw";
+        }
+        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\result_check.txt",result + System.Environment.NewLine);     
+    }
     /// <summary>
     /// 手番側が負けているか
     /// </summary>
@@ -144,7 +171,7 @@ public class Board {
         if (GameFinished) {
             int blackScore = BitCount(PlayerBoard);
             int whiteScore = BitCount(OpponentBoard);
-            if (NowTurn ==WhiteTurn) {
+            if (NowTurn == WhiteTurn) {
                 int tmp = blackScore;
                 blackScore = whiteScore;
                 whiteScore = tmp;
@@ -161,6 +188,34 @@ public class Board {
         }
 
     }
+    /*public bool IsLose() {
+        if (GameFinished) {
+            int PlayerScore = BitCount(OpponentBoard);
+            int OpponentScore = BitCount(PlayerBoard);
+            if (PlayerScore > OpponentScore) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
+    }*/
+
+
+    /*public bool IsDraw() {
+        if (GameFinished) {
+            int PlayerScore = BitCount(OpponentBoard);
+            int OpponentScore = BitCount(PlayerBoard);
+            if (PlayerScore == OpponentScore) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
+    }*/
 
     /// <summary>
     /// 手番側が引き分けているか
@@ -192,7 +247,7 @@ public class Board {
         if (GameFinished) {
             int blackScore = BitCount(PlayerBoard);
             int whiteScore = BitCount(OpponentBoard);
-            if (NowTurn ==WhiteTurn) {
+            if (NowTurn==WhiteTurn) {
                 int tmp = blackScore;
                 blackScore = whiteScore;
                 whiteScore = tmp;
@@ -209,6 +264,21 @@ public class Board {
         }
  
     }
+
+    /*public bool IsWin() {
+        if (GameFinished) {
+            int PlayerScore = BitCount(OpponentBoard);
+            int OpponentScore = BitCount(PlayerBoard);
+            
+            if (PlayerScore < OpponentScore) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
+    }*/
 
     /// <summary>
     /// 反転箇所を求める
