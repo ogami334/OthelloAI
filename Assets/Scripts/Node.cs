@@ -13,6 +13,8 @@ public class Node {
     public int sum1 = 0;
     public int sum2 = 0;
 
+    public int isblack = 0;
+
 
     public Node() {
         this.board = board;
@@ -22,6 +24,7 @@ public class Node {
         this.children = new List<Node>();
         this.sum1 = 0;
         this.sum2 = 0;
+        this.isblack = 0;
     }
 
     /*public Node(Node node) {
@@ -41,7 +44,7 @@ public class Node {
         //Debug.Log("SN "+sn);
         //Debug.Log("w/n "+w/n);
         //Debug.Log("w/n "+ ((double)w)/ ((double)n) );
-        return  -((double)w)/((double)n) + 8.0*Math.Pow((2*Math.Log(sn)/n),0.5)/3.0;
+        return  ((double)w)/((double)n) + 3.5*Math.Pow((2*Math.Log(sn)/n),0.5);
         //return -w/n;
     }
 
@@ -71,18 +74,27 @@ public class Node {
         int value;
         if (board.IsLose()) {
             value = -1;
+            if (isblack==0) {
+                value *= -1;
+            }
             reward += value;
             visited += 1;
             return value;
         }
         else if (board.IsWin()) {
             value = 1;
+            if (isblack==0) {
+                value *= -1;
+            }
             reward += value;
             visited += 1;
             return value;
         }
         else if (board.IsDraw()) {
             value = 0;
+            if (isblack==0) {
+                value *= -1;
+            }
             reward += value;
             visited += 1;
             return value;
@@ -98,7 +110,7 @@ public class Node {
             return value;
         }
         else {
-            value = -NextChildBasedUcb().Evaluate();
+            value = NextChildBasedUcb().Evaluate();
             reward += value;
             visited += 1;
             return value;
@@ -109,7 +121,8 @@ public class Node {
         List <ulong> legalPutList = board.MakePlayerLegalPutList();
         foreach (ulong legalput in legalPutList) {
             Node NextNode = new Node();
-            NextNode.board = NextNode.GenerateUpdatedBoard(NextNode.board,legalput);
+            //NextNode.board = NextNode.GenerateUpdatedBoard(NextNode.board,legalput);
+            NextNode.board = NextNode.GenerateUpdatedBoard(board,legalput);
             children.Add(NextNode);
         }
     }
@@ -121,25 +134,35 @@ public class Node {
     }
 
     public int PlayOut(Board board) {
+        int value;
         if (board.IsLose()) {
+            value = -1;
             //Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
             //Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
             //Debug.Log("Lose");
-            return -1;
+            if (isblack==0) {
+                value *= -1;
+            }
+            return value;
         }
         if (board.IsDraw()) {
+            value = 0;
             //Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
             //Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
             //Debug.Log("Draw");
-            return 0;
+            return value;
         }
         if (board.IsWin()) {
+            value = 1;
             //Debug.Log("PlayerBoard" + board.PlayerBoard.ToString("x"));
             //Debug.Log("OpponentBoard"+board.OpponentBoard.ToString("x"));
             //Debug.Log("Win");
-            return 1;
+            if (isblack==0) {
+                value *= -1;
+            }
+            return value;
         }
-        return -PlayOut(GenerateUpdatedBoard(board,board.Random_action()));
+        return PlayOut(GenerateUpdatedBoard(board,board.Random_action()));
     }
 }
 

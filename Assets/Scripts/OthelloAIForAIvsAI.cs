@@ -29,14 +29,14 @@ public class OthelloAIForAIvsAI : MonoBehaviour
     const double    WeightCellPoints2               = 0.0;
     const double    WeightDangerousHands2           = 2;
     
-    const int maxGames = 1;
+    const int maxGames = 101;
     public int CntGames{ get; set; } 
     public double bestEval;
 
-    public int simulation = 1000;
+
 
     void Start() {
-        File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\Mtest.txt","current_simulation "+simulation.ToString()+System.Environment.NewLine);
+        //File.AppendAllText(@"C:\Users\denjo\Downloads\12ゲームAI リバーシ\Othello\Mtest.txt","current_simulation "+simulation.ToString()+System.Environment.NewLine);
         Random.InitState(System.DateTime.Now.Millisecond);
         player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1,WeightCellPoints1);
         player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2,WeightCellPoints2);
@@ -46,8 +46,10 @@ public class OthelloAIForAIvsAI : MonoBehaviour
 
     void Update() {
         if(board.GameFinished) {
-            board.GetResult2();
-            if (++CntGames < maxGames) RestartButtonCilcked();
+            if (++CntGames < maxGames){
+                board.GetResult2();
+                RestartButtonCilcked();
+            } 
         }
         else if(IsHumanTurn()) {
             if(Input.GetMouseButtonDown(0)) {
@@ -184,7 +186,7 @@ public class OthelloAIForAIvsAI : MonoBehaviour
             Node root_node = new Node();
             root_node.board = board;
             MonteCarloTreeSearch MCTS = new MonteCarloTreeSearch();
-            MCTS.Train(root_node,simulation);
+            MCTS.Train(root_node,100);
             put = MCTS.SelectAction(root_node);
         }
         else {
