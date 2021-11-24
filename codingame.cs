@@ -660,9 +660,6 @@ class Player
             for (int i = 0; i < actionCount; i++)
             {
                 string action = Console.ReadLine(); // the action
-                //ulong tmp_put = player.IOToPut(action);
-                //action = player.PutToIO(tmp_put);
-                //possible_actions[i] = action;
             }
             board.PlayerBoard = playerboard;
             board.OpponentBoard = opponentboard;
@@ -716,20 +713,17 @@ class Player
         int res;
         int INF = 70;
         int tmp_value;
-        //Board newBoard;
-        //PlayerInformation playerInformation = blackInformation;
-        //if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
         // 再帰の終了条件: 読みの深さが上限に達した場合
         if(rest_depth==0) {
-            //res = board.BitCount(boardToEvaluate.PlayerBoard);//added
-            res = board.BitCount(boardToEvaluate.PlayerBoard) - board.BitCount(boardToEvaluate.OpponentBoard);
+            //res = board.BitCount(boardToEvaluate.PlayerBoard) - board.BitCount(boardToEvaluate.OpponentBoard);
+            res = BitOperations.PopCount(boardToEvaluate.PlayerBoard) - 32;
             
             if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1;
             return res;
         }
         List<ulong> puts = boardToEvaluate.MakePlayerLegalPutList();
         if (puts.Count==0) {
-            res = board.BitCount(boardToEvaluate.PlayerBoard) - board.BitCount(boardToEvaluate.OpponentBoard);
+            res = BitOperations.PopCount(boardToEvaluate.PlayerBoard) - BitOperations.PopCount(boardToEvaluate.OpponentBoard);
             if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1;
                 return res;   
         }
@@ -803,7 +797,6 @@ class Player
                     res = tmp_value;
                     alpha = res;
                 }
-                //res = System.Math.Max(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));//compare child value vs tmp value
                 if (res > beta) {
                     return res;
                 }
@@ -825,7 +818,6 @@ class Player
                 if (res < alpha) {
                     return res;
                 }
-                //res = System.Math.Min(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));
             }
         }
 
@@ -928,20 +920,25 @@ class Player
             //AIInformation.LastNumberOfHands.Add(puts.Count);
             double[] evals = new double[puts.Count];
             bestEval = -INF;
+            ulong bestput = 0x0000000000000000;
             for (int i = 0; i < puts.Count; ++i) {
                 Board newBoard = new Board(board);
                 newBoard.UpdateBoard(puts[i]);
-                evals[i] = EvaluationValue_fullsearch_new(newBoard,rest_depth-1,-80,80);
-                if (evals[i] > bestEval) bestEval = evals[i]; 
+                evals[i] = EvaluationValue_fullsearch_new(newBoard,rest_depth-1,0,0);
+                if (evals[i] > bestEval) {
+                    bestEval = evals[i]; 
+                    bestput = puts[i];
+                }
             }
             //AIInformation.UpdateLastAvgNumberOfHands();
-            List<ulong> bestPuts = new List<ulong>();
-            for (int i = 0; i < puts.Count; ++i) {
+            //List<ulong> bestPuts = new List<ulong>();
+            /*for (int i = 0; i < puts.Count; ++i) {
                 if (evals[i] == bestEval) bestPuts.Add(puts[i]);
-            }
-            Random rand = new Random();
-            int bi = rand.Next(0,bestPuts.Count);
-            return bestPuts[bi];            
+            }*/
+            //Random rand = new Random();
+            //int bi = rand.Next(0,bestPuts.Count);
+            //return bestPuts[bi];
+            return bestput;           
         }
         else if (rest_depth <= 35) {
             const double INF = 1e9;
@@ -950,20 +947,25 @@ class Player
             //AIInformation.UpdateLastAvgNumberOfHands();
             double[] evals = new double[puts.Count];
             bestEval = -INF;
+            ulong bestput=0x0000000000000000;
             for (int i = 0; i < puts.Count; ++i) {
                 Board newBoard = new Board(board);
                 newBoard.UpdateBoard(puts[i]);
                 evals[i] = EvaluationValue(newBoard, 1, -INF, INF);
-                if (evals[i] > bestEval) bestEval = evals[i]; 
+                if (evals[i] > bestEval) {
+                    bestEval = evals[i]; 
+                    bestput = puts[i];
+                }
             }
-            List<ulong> bestPuts = new List<ulong>();
+            /*List<ulong> bestPuts = new List<ulong>();
             for (int i = 0; i < puts.Count; ++i) {
                 if (evals[i] == bestEval) bestPuts.Add(puts[i]);
-            }
+            }*/
             //AIInformation.UpdateLastAvgNumberOfHands();
-            Random rand = new Random();
-            int bi = rand.Next(0,bestPuts.Count);
-            return bestPuts[bi];
+            //Random rand = new Random();
+            //int bi = rand.Next(0,bestPuts.Count);
+            //return bestPuts[bi];
+            return bestput;
         }
         else {
 
@@ -972,7 +974,7 @@ class Player
             AIInformation.LastNumberOfHands.Add(puts.Count);
             //AIInformation.UpdateLastAvgNumberOfHands();
             if (board.NowTurn == Board.BlackTurn) {
-                Console.Error.WriteLine("black");
+                //Console.Error.WriteLine("black");
                 var check = System.Tuple.Create(blackBoard,whiteBoard);
                 if (BlackDict.ContainsKey(check)) {
                     Console.Error.WriteLine("hit b");
@@ -980,13 +982,14 @@ class Player
                 }
             }
             else {
-                Console.Error.WriteLine("white");
+                //Console.Error.WriteLine("white");
                 var check = System.Tuple.Create(whiteBoard,blackBoard);
                 if (WhiteDict.ContainsKey(check)) {
                     Console.Error.WriteLine("hit w");
                     return WhiteDict[check];
                 }
             }
+            ulong bestput = 0x0000000000000000;
             double[] evals = new double[puts.Count];
             //double bestEval = -INF;
             bestEval = -INF;
@@ -994,17 +997,21 @@ class Player
                 Board newBoard = new Board(board);
                 newBoard.UpdateBoard(puts[i]);
                 evals[i] = EvaluationValue_Memo_Open(board,puts[i],newBoard, 1, -INF, INF);
-                if (evals[i] > bestEval) bestEval = evals[i]; 
+                if (evals[i] > bestEval) {
+                    bestEval = evals[i]; 
+                    bestput = puts[i];
+                }
             }
             //AIInformation.UpdateLastAvgNumberOfHands();
-            List<ulong> bestPuts = new List<ulong>();
-            for (int i = 0; i < puts.Count; ++i) {
+            //List<ulong> bestPuts = new List<ulong>();
+            /*for (int i = 0; i < puts.Count; ++i) {
                 if (evals[i] == bestEval) bestPuts.Add(puts[i]);
-            }
+            }*/
             //AIInformation.UpdateLastAvgNumberOfHands();
-            Random rand = new Random();
-            int bi = rand.Next(0,bestPuts.Count);
-            return bestPuts[bi];
+            //Random rand = new Random();
+            //int bi = rand.Next(0,bestPuts.Count);
+            //return bestPuts[bi];
+            return bestput;
         }
     }//add full-search option
 }
@@ -1294,7 +1301,7 @@ public class Board {
 
     private int CalcPlayerNumberOfHands() {
         ulong playerLegalBoard = MakePlayerLegalBoard();
-        int playerNumberOfHands = BitCount(playerLegalBoard);
+        int playerNumberOfHands = BitOperations.PopCount(playerLegalBoard);
         return playerNumberOfHands;
     }
 
@@ -1328,7 +1335,7 @@ public class Board {
             }
             if(cntNewSettledStone == 0) break;
         }
-        return BitCount(playerSettledStoneBoard);
+        return BitOperations.PopCount(playerSettledStoneBoard);
     }
 
     private int CalcOpponentSettledStone() {
@@ -1367,16 +1374,16 @@ public class Board {
         const ulong BitC            = 0x4281000000008142;
         const ulong BitCorner       = 0x8100000000000081;
 
-        int res =   PtCenter    * BitCount(PlayerBoard & BitCenter)
-                  + PtBoxEdge   * BitCount(PlayerBoard & BitBoxEdge)
-                  + PtBoxCorner * BitCount(PlayerBoard & BitBoxCorner)
-                  + PtMiddleB   * BitCount(PlayerBoard & BitMiddleB)
-                  + PtMiddleA   * BitCount(PlayerBoard & BitMiddleA)
-                  + PtX         * BitCount(PlayerBoard & BitX)
-                  + PtB         * BitCount(PlayerBoard & BitB)
-                  + PtA         * BitCount(PlayerBoard & BitA)
-                  + PtC         * BitCount(PlayerBoard & BitC)
-                  + PtCorner    * BitCount(PlayerBoard & BitCorner);
+        int res =   PtCenter    * BitOperations.PopCount(PlayerBoard & BitCenter)
+                  + PtBoxEdge   * BitOperations.PopCount(PlayerBoard & BitBoxEdge)
+                  + PtBoxCorner * BitOperations.PopCount(PlayerBoard & BitBoxCorner)
+                  + PtMiddleB   * BitOperations.PopCount(PlayerBoard & BitMiddleB)
+                  + PtMiddleA   * BitOperations.PopCount(PlayerBoard & BitMiddleA)
+                  + PtX         * BitOperations.PopCount(PlayerBoard & BitX)
+                  + PtB         * BitOperations.PopCount(PlayerBoard & BitB)
+                  + PtA         * BitOperations.PopCount(PlayerBoard & BitA)
+                  + PtC         * BitOperations.PopCount(PlayerBoard & BitC)
+                  + PtCorner    * BitOperations.PopCount(PlayerBoard & BitCorner);
         return res;
     }
 
@@ -1395,13 +1402,13 @@ public class Board {
         int res = 0;
         ulong blankBoard = ~(PlayerBoard | OpponentBoard);
         // 左上
-        if((blankBoard & 0x8000000000000000) > 0) res += BitCount(PlayerBoard & 0x40c0000000000000);
+        if((blankBoard & 0x8000000000000000) > 0) res += BitOperations.PopCount(PlayerBoard & 0x40c0000000000000);
         // 右上
-        if((blankBoard & 0x0100000000000000) > 0) res += BitCount(PlayerBoard & 0x0203000000000000);
+        if((blankBoard & 0x0100000000000000) > 0) res += BitOperations.PopCount(PlayerBoard & 0x0203000000000000);
         // 左下
-        if((blankBoard & 0x0000000000000080) > 0) res += BitCount(PlayerBoard & 0x000000000000c040);
+        if((blankBoard & 0x0000000000000080) > 0) res += BitOperations.PopCount(PlayerBoard & 0x000000000000c040);
         // 右下
-        if((blankBoard & 0x0000000000000001) > 0) res += BitCount(PlayerBoard & 0x0000000000000302);
+        if((blankBoard & 0x0000000000000001) > 0) res += BitOperations.PopCount(PlayerBoard & 0x0000000000000302);
         return res;
     }
 
