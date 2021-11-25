@@ -33,6 +33,7 @@ class Player
 
     static Dictionary <System.Tuple<ulong,ulong>,ulong> BlackDict = new Dictionary <System.Tuple<ulong,ulong>,ulong>();
     static Dictionary <System.Tuple<ulong,ulong>,ulong> WhiteDict = new Dictionary <System.Tuple<ulong,ulong>,ulong>();
+    static Dictionary <ulong,string> PutTOOutput = new Dictionary <ulong,string>();
     static void Main(string[] args)
     {
         Random rand = new Random();
@@ -48,7 +49,7 @@ class Player
         ulong opponentboard = 0x0000000000000000;
         ulong mask = 0x8000000000000000;
 
-        BlackDict.Add(System.Tuple.Create((ulong) 0x810000000 , (ulong)0x1008000000), (ulong)0x100000000000 );
+        BlackDict.Add(Tuple.Create((ulong) 0x810000000 , (ulong)0x1008000000), (ulong)0x100000000000 );
         BlackDict.Add(System.Tuple.Create((ulong) 0x100810000000 , (ulong)0x201008000000), (ulong)0x2000000000 );
         BlackDict.Add(System.Tuple.Create((ulong) 0x3010000000 , (ulong)0x380808000000), (ulong)0x10000000000000 );
         BlackDict.Add(System.Tuple.Create((ulong) 0x20003010000000 , (ulong)0x780808000000), (ulong)0x10000000000000 );
@@ -626,6 +627,15 @@ class Player
         WhiteDict.Add(System.Tuple.Create((ulong) 0x404040000 , (ulong) 0x101818080000), (ulong)0x100000 );
         WhiteDict.Add(System.Tuple.Create((ulong) 0x40c1000 , (ulong) 0x121c18000000), (ulong)0x40000000000 );
         WhiteDict.Add(System.Tuple.Create((ulong) 0x1c0000 , (ulong) 0x381c000000), (ulong)0x400000000 );
+        ulong tmp_mask = 0x8000000000000000;
+        for (int i=0;i<8;i++) {
+            for (int j=0;j<8;j++) {
+                //ulong tmp_put = ((ulong)0x0000000000000001)<<(63-8*i-j);
+                string output =  ((char)(j+97)).ToString() + (i+1).ToString();
+                PutTOOutput.Add(tmp_mask,output);
+                tmp_mask >>= 1;
+            }
+        }
 
         player1Information = new PlayerInformation(isHuman1, MaxNodes1, WeightNumberOfHands1, WeightNumberOfSettledStones1, WeightDangerousHands1,WeightCellPoints1);
         player2Information = new PlayerInformation(isHuman2, MaxNodes2, WeightNumberOfHands2, WeightNumberOfSettledStones2, WeightDangerousHands2,WeightCellPoints2);
@@ -671,8 +681,10 @@ class Player
                 board.NowTurn = -100;
             }
             ulong put = player.AIPlay(); 
-            string decided_action = player.PutToIO(put);
-            Console.WriteLine(decided_action);
+            //Console.Error.WriteLine(put.ToString("x"));
+            Console.WriteLine(PutTOOutput[put]);
+            //string decided_action = player.PutToIO(put);
+            //Console.WriteLine(decided_action);
         }
     }
     ulong IOToPut(string IO) {
@@ -768,23 +780,23 @@ class Player
         double tmp_value;
         Board newBoard;
 
-        PlayerInformation playerInformation = blackInformation;
-        if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
+        //PlayerInformation playerInformation = blackInformation;
+        //if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
         //int maxDepth = CalcMaxDepthFromPlayerInformation(playerInformation) ;
         int maxDepth = 4;
         // 再帰の終了条件: 読みの深さが上限に達した場合
         if(nowDepth == maxDepth) {
             //Console.Error.WriteLine(maxDepth);
-            res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * playerInformation.WeightNumberOfHands
-                 + boardToEvaluate.CalcDifferenceSettledStone()     * playerInformation.WeightNumberOfSettledStones
-                 - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands
-                 + boardToEvaluate.CalcDifferenceCellPoints()       * playerInformation.WeightCellPoints;
+            res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * 0.3
+                 + boardToEvaluate.CalcDifferenceSettledStone()     * 1
+                 - boardToEvaluate.CountDifferenceDangerousHands()  * 2
+                 + boardToEvaluate.CalcDifferenceCellPoints()       * 0.2;
             if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
             return res;
         }
         
         List<ulong> puts = boardToEvaluate.MakePlayerLegalPutList();
-        playerInformation.LastNumberOfHands.Add(puts.Count);
+        //playerInformation.LastNumberOfHands.Add(puts.Count);
 
         // 現在のノードが手番側の場合
         if(boardToEvaluate.NowTurn == board.NowTurn) {
@@ -833,8 +845,8 @@ class Player
                 return EvalDict1[boardToEvaluate];
             }
 
-            PlayerInformation playerInformation = blackInformation;
-            if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
+            //PlayerInformation playerInformation = blackInformation;
+            //if(board.NowTurn == Board.WhiteTurn) playerInformation = whiteInformation;
             //int maxDepth = CalcMaxDepthFromPlayerInformation(playerInformation);
             //maxDepth = 4;
             int maxDepth = 4;
@@ -843,10 +855,10 @@ class Player
 
             // 再帰の終了条件: 読みの深さが上限に達した場合
             if(nowDepth == maxDepth) {
-                res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * playerInformation.WeightNumberOfHands
-                    + boardToEvaluate.CalcDifferenceSettledStone()     * playerInformation.WeightNumberOfSettledStones
-                    - boardToEvaluate.CountDifferenceDangerousHands()  * playerInformation.WeightDangerousHands
-                    + boardToEvaluate.CalcDifferenceCellPoints()       * playerInformation.WeightCellPoints
+                res =  boardToEvaluate.CalcDifferenceNumberOfHands()    * 0.3
+                    + boardToEvaluate.CalcDifferenceSettledStone()     * 1
+                    - boardToEvaluate.CountDifferenceDangerousHands()  * 2
+                    + boardToEvaluate.CalcDifferenceCellPoints()       * 0.2
                     - boardToEvaluate.CalcOpenness(recput,origBoard) *0.3;
                 if(boardToEvaluate.NowTurn != board.NowTurn) res *= -1.0;
                 EvalDict1[boardToEvaluate] = res;
@@ -854,7 +866,7 @@ class Player
             }
             
             List<ulong> puts = boardToEvaluate.MakePlayerLegalPutList();
-            playerInformation.LastNumberOfHands.Add(puts.Count);
+            //playerInformation.LastNumberOfHands.Add(puts.Count);
 
             // 現在のノードが手番側の場合
             if(boardToEvaluate.NowTurn == board.NowTurn) {
@@ -867,7 +879,6 @@ class Player
                         res = tmp_value;
                         alpha = res;
                     }
-                    //res = System.Math.Max(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));//compare child value vs tmp value
                     if (res> beta) {
                         EvalDict1[boardToEvaluate] = res;
                         return res;
@@ -891,7 +902,6 @@ class Player
                         EvalDict1[boardToEvaluate] = res;
                         return res;
                     }
-                    //res = System.Math.Min(res, EvaluationValue(newBoard, nowDepth + 1, alpha, beta));
                 }
             }
             EvalDict1[boardToEvaluate] = res;
@@ -899,8 +909,6 @@ class Player
     }
 
     int CalcMaxDepthFromPlayerInformation(PlayerInformation playerInformation) {
-        //Console.Error.WriteLine(playerInformation.MaxNodes);
-        //Console.Error.WriteLine(1+playerInformation.LastAvgNumberOfHands);
         return System.Math.Max(1, (int)(System.Math.Log(playerInformation.MaxNodes, 1 + playerInformation.LastAvgNumberOfHands)));
     }
 
@@ -914,13 +922,13 @@ class Player
         }
         int num_of_stones = BitOperations.PopCount(board.PlayerBoard) + BitOperations.PopCount(board.OpponentBoard);
         int rest_depth = 64 - num_of_stones;
-        if (rest_depth <= 10) {
+        if (rest_depth <= 11) {
             const double INF = 1e9;
             List<ulong> puts = board.MakePlayerLegalPutList();
             //AIInformation.LastNumberOfHands.Add(puts.Count);
             double[] evals = new double[puts.Count];
             bestEval = -INF;
-            ulong bestput = 0x0000000000000000;
+            ulong bestput = puts[0];
             for (int i = 0; i < puts.Count; ++i) {
                 Board newBoard = new Board(board);
                 newBoard.UpdateBoard(puts[i]);
@@ -947,7 +955,7 @@ class Player
             //AIInformation.UpdateLastAvgNumberOfHands();
             double[] evals = new double[puts.Count];
             bestEval = -INF;
-            ulong bestput=0x0000000000000000;
+            ulong bestput=puts[0];
             for (int i = 0; i < puts.Count; ++i) {
                 Board newBoard = new Board(board);
                 newBoard.UpdateBoard(puts[i]);
@@ -989,7 +997,7 @@ class Player
                     return WhiteDict[check];
                 }
             }
-            ulong bestput = 0x0000000000000000;
+            ulong bestput = puts[0];
             double[] evals = new double[puts.Count];
             //double bestEval = -INF;
             bestEval = -INF;
@@ -1003,17 +1011,9 @@ class Player
                 }
             }
             //AIInformation.UpdateLastAvgNumberOfHands();
-            //List<ulong> bestPuts = new List<ulong>();
-            /*for (int i = 0; i < puts.Count; ++i) {
-                if (evals[i] == bestEval) bestPuts.Add(puts[i]);
-            }*/
-            //AIInformation.UpdateLastAvgNumberOfHands();
-            //Random rand = new Random();
-            //int bi = rand.Next(0,bestPuts.Count);
-            //return bestPuts[bi];
             return bestput;
         }
-    }//add full-search option
+    }
 }
 public class PlayerInformation
 {
